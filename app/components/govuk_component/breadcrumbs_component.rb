@@ -4,7 +4,7 @@ class GovukComponent::BreadcrumbsComponent < GovukComponent::Base
   def initialize(breadcrumbs:, hide_in_print: false, collapse_on_mobile: false, classes: [], html_attributes: {})
     super(classes: classes, html_attributes: html_attributes)
 
-    @breadcrumbs        = breadcrumbs
+    @breadcrumbs        = build_list(breadcrumbs)
     @hide_in_print      = hide_in_print
     @collapse_on_mobile = collapse_on_mobile
   end
@@ -16,5 +16,23 @@ private
       classes << "govuk-!-display-none-print" if hide_in_print
       classes << "govuk-breadcrumbs--collapse-on-mobile" if collapse_on_mobile
     end
+  end
+
+  def build_list(breadcrumbs)
+    return breadcrumbs if breadcrumbs.is_a?(Array)
+
+    breadcrumbs.map { |text, link| build_list_item(text, link) }
+  end
+
+  def build_list_item(text, link)
+    if link.present?
+      list_item { link_to(text, link, class: "govuk-breadcrumbs__link") }
+    else
+      list_item(aria: { current: "page" }) { text }
+    end
+  end
+
+  def list_item(html_attributes = {}, &block)
+    tag.li(class: "govuk-breadcrumbs__list-item", **html_attributes, &block)
   end
 end
